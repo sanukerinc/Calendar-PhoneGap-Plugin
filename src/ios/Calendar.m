@@ -358,7 +358,7 @@
     notes = [notes stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
     [predicateStrings addObject:[NSString stringWithFormat:@"notes contains[c] '%@'", notes]];
   }
-  if (modifiedFrom != (id)[NSNull null] && modifiedFrom <= [NSDate date]) {
+  if (fromDate != (id)[NSNull null] && fromDate <= [NSDate date]) {
     [predicateStrings addObject:[NSString stringWithFormat:@"lastModifiedDate >= '%@'", fromDate]];
   }
 
