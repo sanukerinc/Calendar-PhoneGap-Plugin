@@ -28,7 +28,7 @@
   } else { // we're on iOS 5 or older
     accessGranted = YES;
   }
-    
+
   if (accessGranted) {
     self.eventStore = eventStoreCandidate;
   }
@@ -314,6 +314,52 @@
   if (notes != (id)[NSNull null] && notes.length > 0) {
     notes = [notes stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
     [predicateStrings addObject:[NSString stringWithFormat:@"notes contains[c] '%@'", notes]];
+  }
+
+  NSString *predicateString = [predicateStrings componentsJoinedByString:@" AND "];
+
+  NSPredicate *matches;
+  NSArray  *datedEvents, *matchingEvents;
+
+  if (predicateString.length > 0) {
+    matches = [NSPredicate predicateWithFormat:predicateString];
+
+    datedEvents = [self.eventStore eventsMatchingPredicate:[eventStore predicateForEventsWithStartDate:startDate endDate:endDate calendars:calendars]];
+
+    matchingEvents = [datedEvents filteredArrayUsingPredicate:matches];
+  } else {
+
+    datedEvents = [self.eventStore eventsMatchingPredicate:[eventStore predicateForEventsWithStartDate:startDate endDate:endDate calendars:calendars]];
+
+    matchingEvents = datedEvents;
+  }
+
+  return matchingEvents;
+}
+
+- (NSArray*) findEKEventsWithTitle: (NSString *)title
+                        location: (NSString *)location
+                           notes: (NSString *)notes
+                       startDate: (NSDate *)startDate
+                         endDate: (NSDate *)endDate
+                       calendars: (NSArray*)calendars
+                    modifiedFrom: (NSDate *)fromDate {
+
+  NSMutableArray *predicateStrings = [NSMutableArray arrayWithCapacity:4];
+  if (title != (id)[NSNull null] && title.length > 0) {
+    title = [title stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
+    [predicateStrings addObject:[NSString stringWithFormat:@"title contains[c] '%@'", title]];
+  }
+  if (location != (id)[NSNull null] && location.length > 0) {
+    location = [location stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
+    [predicateStrings addObject:[NSString stringWithFormat:@"location contains[c] '%@'", location]];
+  }
+  if (notes != (id)[NSNull null] && notes.length > 0) {
+    notes = [notes stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
+    [predicateStrings addObject:[NSString stringWithFormat:@"notes contains[c] '%@'", notes]];
+  }
+  if (modifiedFrom != (id)[NSNull null] && modifiedFrom <= [NSDate date]) {
+    [predicateStrings addObject:[NSString stringWithFormat:@"lastModifiedDate >= '%@'", fromDate]];
   }
 
   NSString *predicateString = [predicateStrings componentsJoinedByString:@" AND "];
@@ -775,6 +821,81 @@
 
     if (theEvent == nil) {
       matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendars:calendars];
+    } else {
+      matchingEvents = [NSArray arrayWithObject:theEvent];
+    }
+
+    NSMutableArray * eventsDataArray = [self eventsToDataArray:matchingEvents];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsArray:eventsDataArray];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+  }];
+}
+
+- (void) findNewEventWithOptionsModifiedFrom:(CDVInvokedUrlCommand*)command {
+  NSDictionary* options = [command.arguments objectAtIndex:0];
+  NSString* title      = [options objectForKey:@"title"];
+  NSString* location   = [options objectForKey:@"location"];
+  NSString* notes      = [options objectForKey:@"notes"];
+  NSNumber* startTime  = [options objectForKey:@"startTime"];
+  NSNumber* endTime    = [options objectForKey:@"endTime"];
+  NSNumber* fromTime   = [options objectForKey:@"modifiedFrom"];
+
+  // actually the only option we're currently using is calendarName
+  NSDictionary* calOptions = [options objectForKey:@"options"];
+  NSString* calEventID = [calOptions objectForKey:@"id"];
+  NSString* calendarName = [calOptions objectForKey:@"calendarName"];
+
+  [self.commandDelegate runInBackground: ^{
+    NSTimeInterval _startInterval = [startTime doubleValue] / 1000; // strip millis
+    NSDate *myStartDate = [NSDate dateWithTimeIntervalSince1970:_startInterval];
+
+    NSDate* myEndDate;
+    if ([endTime doubleValue] > 0) {
+      NSTimeInterval _endInterval = [endTime doubleValue] / 1000; // strip millis
+      myEndDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
+    } else {
+      // an enddate is mandatory for iOS, so using now+1y if it's not passed in
+      NSDateComponents *oneYearFromNowComponents = [[NSDateComponents alloc] init];
+      oneYearFromNowComponents.year = 1;
+      myEndDate = [[NSCalendar currentCalendar] dateByAddingComponents:oneYearFromNowComponents
+                                                                toDate:[NSDate date]
+                                                               options:0];
+    }
+
+    NSTimeInterval _modifiedFromInterval = [fromTime doubleValue] / 1000;
+    NSDate* modifiedFromDate = [NSDate dateWithTimeIntervalSince1970:_modifiedFromInterval];
+
+    NSArray* calendars = nil;
+
+    if (calendarName == (id)[NSNull null]) {
+        calendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
+      if (calendars.count == 0) {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"No default calendar found. Is access to the Calendar blocked for this app?"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+      }
+    } else {
+      EKCalendar * calendar = [self findEKCalendar:calendarName];
+
+      if (calendar == nil) {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Could not find calendar"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+      } else {
+          calendars = [NSArray arrayWithObject:calendar];
+      }
+    }
+
+    // Find matches
+    EKCalendarItem *theEvent;
+    if (calEventID != nil) {
+      theEvent = [self.eventStore calendarItemWithIdentifier:calEventID];
+    }
+
+    NSArray *matchingEvents;
+
+    if (theEvent == nil) {
+      matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendars:calendars modifiedFrom: modifiedFromDate];
     } else {
       matchingEvents = [NSArray arrayWithObject:theEvent];
     }

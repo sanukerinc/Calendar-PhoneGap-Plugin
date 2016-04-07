@@ -17,6 +17,14 @@
                          endDate: (NSDate *)endDate
                        calendars: (NSArray *)calendars;
 
+-(NSArray*)findEKEventsWithTitle: (NSString *)title
+                       location: (NSString *)location
+                          notes: (NSString *)notes
+                      startDate: (NSDate *)startDate
+                        endDate: (NSDate *)endDate
+                      calendars: (NSArray *)calendars
+                    modifiedFrom: (NSDate *)fromDate;
+
 - (void)hasReadPermission:(CDVInvokedUrlCommand*)command;
 - (void)requestReadPermission:(CDVInvokedUrlCommand*)command;
 
@@ -35,6 +43,7 @@
 - (void)modifyEventWithOptions:(CDVInvokedUrlCommand*)command;
 
 - (void)findEventWithOptions:(CDVInvokedUrlCommand*)command;
+- (void)findNewEventWithOptionsModifiedFrom:(CDVInvokedUrlCommand*)command;
 - (void)findAllEventsInNamedCalendar:(CDVInvokedUrlCommand*)command;
 
 - (void)listCalendars:(CDVInvokedUrlCommand*)command;
