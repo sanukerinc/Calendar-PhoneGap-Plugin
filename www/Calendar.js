@@ -170,6 +170,28 @@ Calendar.prototype.findEventWithOptions = function (title, location, notes, star
   }])
 };
 
+Calendar.prototype.findNewEventWithOptionsModifiedFrom = function (title, location, notes, startDate, endDate, options, fromDate, successCallback, errorCallback) {
+  // merge passed options with defaults
+  var mergedOptions = Calendar.prototype.getCalendarOptions();
+  for (var val in options) {
+    if (options.hasOwnProperty(val)) {
+      mergedOptions[val] = options[val];
+    }
+  }
+  if (options.recurrenceEndDate != null) {
+    mergedOptions.recurrenceEndTime = options.recurrenceEndDate.getTime();
+  }
+  cordova.exec(successCallback, errorCallback, "Calendar", "findNewEventWithOptionsModifiedFrom", [{
+    "title": title,
+    "location": location,
+    "notes": notes,
+    "startTime": startDate instanceof Date ? startDate.getTime() : null,
+    "endTime": endDate instanceof Date ? endDate.getTime() : null,
+    "options": mergedOptions,
+    "modifiedFrom": fromDate instanceof Date ? fromDate.getTime() : null
+  }])
+};
+
 Calendar.prototype.findEvent = function (title, location, notes, startDate, endDate, successCallback, errorCallback) {
   Calendar.prototype.findEventWithOptions(title, location, notes, startDate, endDate, {}, successCallback, errorCallback);
 };
