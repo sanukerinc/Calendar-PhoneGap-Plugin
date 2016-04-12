@@ -345,7 +345,7 @@
                        calendars: (NSArray*)calendars
                     modifiedFrom: (NSDate *)fromDate {
 
-  NSMutableArray *predicateStrings = [NSMutableArray arrayWithCapacity:4];
+  NSMutableArray *predicateStrings = [NSMutableArray arrayWithCapacity:3];
   if (title != (id)[NSNull null] && title.length > 0) {
     title = [title stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
     [predicateStrings addObject:[NSString stringWithFormat:@"title contains[c] '%@'", title]];
@@ -358,9 +358,6 @@
     notes = [notes stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
     [predicateStrings addObject:[NSString stringWithFormat:@"notes contains[c] '%@'", notes]];
   }
-  if (fromDate != (id)[NSNull null] && fromDate <= [NSDate date]) {
-    [predicateStrings addObject:[NSString stringWithFormat:@"lastModifiedDate >= '%@'", fromDate]];
-  }
 
   NSString *predicateString = [predicateStrings componentsJoinedByString:@" AND "];
 
@@ -370,14 +367,28 @@
   if (predicateString.length > 0) {
     matches = [NSPredicate predicateWithFormat:predicateString];
 
+    if (fromDate != (id)[NSNull null]) {
+      NSPredicate *fromDatePredicate = [NSPredicate predicateWithFormat:@"lastModifiedDate >= %@", fromDate];
+      matches = [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObjects:matches,fromDatePredicate,nil]];
+    }
+
     datedEvents = [self.eventStore eventsMatchingPredicate:[eventStore predicateForEventsWithStartDate:startDate endDate:endDate calendars:calendars]];
 
     matchingEvents = [datedEvents filteredArrayUsingPredicate:matches];
   } else {
 
+    NSPredicate *fromDatePredicate;
+    if (fromDate != (id)[NSNull null]) {
+      fromDatePredicate = [NSPredicate predicateWithFormat:@"lastModifiedDate >= %@", fromDate];
+    }
     datedEvents = [self.eventStore eventsMatchingPredicate:[eventStore predicateForEventsWithStartDate:startDate endDate:endDate calendars:calendars]];
 
-    matchingEvents = datedEvents;
+    if (fromDatePredicate) {
+      matchingEvents = [datedEvents filteredArrayUsingPredicate:fromDatePredicate];
+    } else {
+      matchingEvents = datedEvents;
+    }
+
   }
 
   return matchingEvents;
