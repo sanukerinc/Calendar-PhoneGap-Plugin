@@ -15,7 +15,8 @@
                            notes: (NSString *)notes
                        startDate: (NSDate *)startDate
                          endDate: (NSDate *)endDate
-                       calendars: (NSArray *)calendars;
+                       calendars: (NSArray *)calendars
+                          allDay: (BOOL)allDay;
 
 -(NSArray*)findEKEventsWithTitle: (NSString *)title
                        location: (NSString *)location
@@ -23,6 +24,7 @@
                       startDate: (NSDate *)startDate
                         endDate: (NSDate *)endDate
                       calendars: (NSArray *)calendars
+                        allDay: (BOOL)allDay
                     modifiedFrom: (NSDate *)fromDate;
 
 - (void)hasReadPermission:(CDVInvokedUrlCommand*)command;
