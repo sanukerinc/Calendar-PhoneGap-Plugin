@@ -157,7 +157,7 @@
       }
 
     if (theEvent == nil) {
-      NSArray *matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendars:calendars allDay: YES];
+      NSArray *matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendars:calendars];
 
       if (matchingEvents.count == 1) {
 
@@ -276,7 +276,7 @@
     NSDate *myEndDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
 
     NSArray *calendars = [NSArray arrayWithObject:calendar];
-    NSArray *matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendars:calendars allDay:YES];
+    NSArray *matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendars:calendars];
 
     NSError *error = NULL;
     for (EKEvent * event in matchingEvents) {
@@ -300,10 +300,9 @@
                            notes: (NSString *)notes
                        startDate: (NSDate *)startDate
                          endDate: (NSDate *)endDate
-                       calendars: (NSArray*)calendars
-                          allDay: (BOOL)allDay {
+                       calendars: (NSArray*)calendars {
 
-  NSMutableArray *predicateStrings = [NSMutableArray arrayWithCapacity:4];
+  NSMutableArray *predicateStrings = [NSMutableArray arrayWithCapacity:3];
   if (title != (id)[NSNull null] && title.length > 0) {
     title = [title stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
     [predicateStrings addObject:[NSString stringWithFormat:@"title contains[c] '%@'", title]];
@@ -315,13 +314,6 @@
   if (notes != (id)[NSNull null] && notes.length > 0) {
     notes = [notes stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
     [predicateStrings addObject:[NSString stringWithFormat:@"notes contains[c] '%@'", notes]];
-  }
-  if (allDay != (id)[NSNull null]) {
-    if (allDay == YES) {
-      [predicateStrings addObject:[NSString stringWithFormat:@"allDay == 1"]];
-    } else {
-      [predicateStrings addObject:[NSString stringWithFormat:@"allDay == 0"]];
-    }
   }
 
   NSString *predicateString = [predicateStrings componentsJoinedByString:@" AND "];
@@ -351,10 +343,9 @@
                        startDate: (NSDate *)startDate
                          endDate: (NSDate *)endDate
                        calendars: (NSArray*)calendars
-                         allDay: (BOOL)allDay
                     modifiedFrom: (NSDate *)fromDate {
 
-  NSMutableArray *predicateStrings = [NSMutableArray arrayWithCapacity:5];
+  NSMutableArray *predicateStrings = [NSMutableArray arrayWithCapacity:4];
   if (title != (id)[NSNull null] && title.length > 0) {
     title = [title stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
     [predicateStrings addObject:[NSString stringWithFormat:@"title contains[c] '%@'", title]];
@@ -367,7 +358,6 @@
     notes = [notes stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
     [predicateStrings addObject:[NSString stringWithFormat:@"notes contains[c] '%@'", notes]];
   }
-
   if (fromDate != (id)[NSNull null] && fromDate <= [NSDate date]) {
     [predicateStrings addObject:[NSString stringWithFormat:@"lastModifiedDate >= '%@'", fromDate]];
   }
@@ -777,14 +767,6 @@
   NSString* notes      = [options objectForKey:@"notes"];
   NSNumber* startTime  = [options objectForKey:@"startTime"];
   NSNumber* endTime    = [options objectForKey:@"endTime"];
-  NSNumber* allDay     = [options objectForKey:@"allDay"];
-  BOOL allDayBool = NO;
-
-  if(allDay.integerValue == 1) {
-    allDayBool = YES;
-  } else {
-    allDayBool = NO;
-  }
 
   // actually the only option we're currently using is calendarName
   NSDictionary* calOptions = [options objectForKey:@"options"];
@@ -838,7 +820,7 @@
     NSArray *matchingEvents;
 
     if (theEvent == nil) {
-      matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendars:calendars allDay: allDayBool];
+      matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendars:calendars];
     } else {
       matchingEvents = [NSArray arrayWithObject:theEvent];
     }
@@ -857,15 +839,6 @@
   NSNumber* startTime  = [options objectForKey:@"startTime"];
   NSNumber* endTime    = [options objectForKey:@"endTime"];
   NSNumber* fromTime   = [options objectForKey:@"modifiedFrom"];
-  NSNumber* allDay     = [options objectForKey:@"allDay"];
-
-  BOOL allDayBool = NO;
-
-  if(allDay.integerValue == 1) {
-    allDayBool = YES;
-  } else {
-    allDayBool = NO;
-  }
 
   // actually the only option we're currently using is calendarName
   NSDictionary* calOptions = [options objectForKey:@"options"];
@@ -922,7 +895,7 @@
     NSArray *matchingEvents;
 
     if (theEvent == nil) {
-      matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendars:calendars allDay: allDayBool modifiedFrom: modifiedFromDate];
+      matchingEvents = [self findEKEventsWithTitle:title location:location notes:notes startDate:myStartDate endDate:myEndDate calendars:calendars modifiedFrom: modifiedFromDate];
     } else {
       matchingEvents = [NSArray arrayWithObject:theEvent];
     }

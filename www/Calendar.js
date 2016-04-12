@@ -149,7 +149,7 @@ Calendar.prototype.createEventInteractivelyWithOptions = function (title, locati
   }])
 };
 
-Calendar.prototype.findEventWithOptions = function (title, location, notes, startDate, endDate, allDay, options, successCallback, errorCallback) {
+Calendar.prototype.findEventWithOptions = function (title, location, notes, startDate, endDate, options, successCallback, errorCallback) {
   // merge passed options with defaults
   var mergedOptions = Calendar.prototype.getCalendarOptions();
   for (var val in options) {
@@ -166,12 +166,11 @@ Calendar.prototype.findEventWithOptions = function (title, location, notes, star
     "notes": notes,
     "startTime": startDate instanceof Date ? startDate.getTime() : null,
     "endTime": endDate instanceof Date ? endDate.getTime() : null,
-    "allDay": allDay,
     "options": mergedOptions
   }])
 };
 
-Calendar.prototype.findNewEventWithOptionsModifiedFrom = function (title, location, notes, startDate, endDate, allDay, options, fromDate, successCallback, errorCallback) {
+Calendar.prototype.findNewEventWithOptionsModifiedFrom = function (title, location, notes, startDate, endDate, options, fromDate, successCallback, errorCallback) {
   // merge passed options with defaults
   var mergedOptions = Calendar.prototype.getCalendarOptions();
   for (var val in options) {
@@ -188,7 +187,6 @@ Calendar.prototype.findNewEventWithOptionsModifiedFrom = function (title, locati
     "notes": notes,
     "startTime": startDate instanceof Date ? startDate.getTime() : null,
     "endTime": endDate instanceof Date ? endDate.getTime() : null,
-    "allDay": allDay,
     "options": mergedOptions,
     "modifiedFrom": fromDate instanceof Date ? fromDate.getTime() : null
   }])
