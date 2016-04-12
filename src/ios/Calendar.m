@@ -367,13 +367,7 @@
     notes = [notes stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"];
     [predicateStrings addObject:[NSString stringWithFormat:@"notes contains[c] '%@'", notes]];
   }
-  if (allDay != (id)[NSNull null]) {
-    if (allDay == YES) {
-      [predicateStrings addObject:[NSString stringWithFormat:@"allDay == 1"]];
-    } else {
-      [predicateStrings addObject:[NSString stringWithFormat:@"allDay == 0"]];
-    }
-  }
+
   if (fromDate != (id)[NSNull null] && fromDate <= [NSDate date]) {
     [predicateStrings addObject:[NSString stringWithFormat:@"lastModifiedDate >= '%@'", fromDate]];
   }
