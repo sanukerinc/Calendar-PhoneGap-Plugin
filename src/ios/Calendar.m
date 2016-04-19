@@ -432,14 +432,13 @@
     NSMutableDictionary *entry = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
                                   event.title, @"title",
                                   event.calendar.title, @"calendar",
-                                  [df stringFromDate:event.creationDate], @"creationDate",
                                   [df stringFromDate:event.startDate], @"startDate",
                                   [df stringFromDate:event.endDate], @"endDate",
                                   nil];
     // optional fields
-    if (event.lastModifiedDate != nil) {
-      [entry setObject:[df stringFromDate:event.lastModifiedDate] forKey:@"lastModifiedDate"];
-    }
+    // if (event.lastModifiedDate != nil) {
+    //   [entry setObject:[df stringFromDate:event.lastModifiedDate] forKey:@"lastModifiedDate"];
+    // }
     [entry setObject:[NSNumber numberWithBool: event.allDay] forKey:@"allDay"];
 
     NSString *availability;
@@ -460,7 +459,7 @@
     NSString *status;
     status = [[NSArray arrayWithObjects:@"None", @"Confirmed", @"Tentative", @"Canceled", nil] objectAtIndex:event.status];
     [entry setObject:status forKey:@"status"];
-    
+
     if (event.organizer != nil) {
       EKParticipant * organizer = event.organizer;
 
