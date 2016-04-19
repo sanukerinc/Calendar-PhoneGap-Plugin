@@ -440,29 +440,27 @@
     if (event.lastModifiedDate != nil) {
       [entry setObject:[df stringFromDate:event.lastModifiedDate] forKey:@"lastModifiedDate"];
     }
-    if (event.allDay != nil) {
-      [entry setObject:event.allDay forKey:@"allDay"];
+    [entry setObject:[NSNumber numberWithBool: event.allDay] forKey:@"allDay"];
+
+    NSString *availability;
+    if (event.availability == -1) {
+      availability = @"Not Supported";
+    } else {
+      availability = [[NSArray arrayWithObjects:@"Busy", @"Free", @"Tentative", @"Unavailable", nil] objectAtIndex:event.availability];
     }
-    if (event.availability != nil) {
-      NSString *availability;
-      if (event.availability == -1) {
-        availability = @"Not Supported";
-      } else {
-        availability = [[NSArray arrayWithObjects:@"Busy", @"Free", @"Tentative", @"Unavailable", nil] objectAtIndex:event.availability];
-      }
-      [entry setObject:availability forKey:@"availability"];
-    }
+    [entry setObject:availability forKey:@"availability"];
+
     if (event.location != nil) {
       [entry setObject:event.location forKey:@"location"];
     }
     if (event.notes != nil) {
       [entry setObject:event.notes forKey:@"message"];
     }
-    if (event.status != null) {
-      NSString *status;
-      status = [[NSArray arrayWithObjects:@"None", @"Confirmed", @"Tentative", @"Canceled", nil] objectAtIndex:event.status];
-      [entry setObject:status forKey:@"status"];
-    }
+
+    NSString *status;
+    status = [[NSArray arrayWithObjects:@"None", @"Confirmed", @"Tentative", @"Canceled", nil] objectAtIndex:event.status];
+    [entry setObject:status forKey:@"status"];
+    
     if (event.organizer != nil) {
       EKParticipant * organizer = event.organizer;
 
