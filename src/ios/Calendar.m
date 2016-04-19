@@ -432,15 +432,53 @@
     NSMutableDictionary *entry = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
                                   event.title, @"title",
                                   event.calendar.title, @"calendar",
+                                  [df stringFromDate:event.creationDate], @"creationDate",
                                   [df stringFromDate:event.startDate], @"startDate",
                                   [df stringFromDate:event.endDate], @"endDate",
                                   nil];
     // optional fields
+    if (event.lastModifiedDate != nil) {
+      [entry setObject:[df stringFromDate:event.lastModifiedDate] forKey:@"lastModifiedDate"];
+    }
+    if (event.allDay != nil) {
+      [entry setObject:event.allDay forKey:@"allDay"];
+    }
+    if (event.availability != nil) {
+      NSString *availability;
+      if (event.availability == -1) {
+        availability = @"Not Supported";
+      } else {
+        availability = [[NSArray arrayWithObjects:@"Busy", @"Free", @"Tentative", @"Unavailable", nil] objectAtIndex:event.availability];
+      }
+      [entry setObject:availability forKey:@"availability"];
+    }
     if (event.location != nil) {
       [entry setObject:event.location forKey:@"location"];
     }
     if (event.notes != nil) {
       [entry setObject:event.notes forKey:@"message"];
+    }
+    if (event.status != null) {
+      NSString *status;
+      status = [[NSArray arrayWithObjects:@"None", @"Confirmed", @"Tentative", @"Canceled", nil] objectAtIndex:event.status];
+      [entry setObject:status forKey:@"status"];
+    }
+    if (event.organizer != nil) {
+      EKParticipant * organizer = event.organizer;
+
+      NSString *role = [[NSArray arrayWithObjects:@"Unknown", @"Required", @"Optional", @"Chair", @"Non Participant", nil] objectAtIndex:organizer.participantRole];
+      NSString *status = [[NSArray arrayWithObjects:@"Unknown", @"Pending", @"Accepted", @"Declined", @"Tentative", @"Delegated", @"Completed", @"In Process", nil] objectAtIndex:organizer.participantStatus];
+      NSString *type = [[NSArray arrayWithObjects:@"Unknown", @"Person", @"Room", @"Resource", @"Group", nil] objectAtIndex:organizer.participantType];
+
+      NSMutableDictionary *organizerEntry = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+                                            organizer.name, @"name",
+                                            [organizer.URL absoluteString], @"URL",
+                                            status, @"status",
+                                            type, @"type",
+                                            role, @"role",
+                                            nil];
+
+      [entry setObject:organizerEntry forKey:@"organizer"];
     }
     if (event.attendees != nil) {
       NSMutableArray * attendees = [[NSMutableArray alloc] init];
