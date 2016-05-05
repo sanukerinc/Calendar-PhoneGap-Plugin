@@ -441,18 +441,16 @@
     // }
     [entry setObject:[NSNumber numberWithBool: event.allDay] forKey:@"allDay"];
 
-    if (event.availability) {
-      NSString *availability;
-      if (event.availability == -1) {
-        availability = @"Not Supported";
-      } else {
-        availability = [[NSArray arrayWithObjects:@"Busy", @"Free", @"Tentative", @"Unavailable", nil] objectAtIndex:event.availability];
-      }
-      [entry setObject:availability forKey:@"availability"];
-    } else {
-      [entry setObject:@"Not Supported" forKey:@"availability"];
-    }
+    NSString *availability;
+    NSLog(@"value of event = %@",event);
+    NSLog(@"value of availability = %@",event.availability);
 
+    if (event.availability == -1) {
+      availability = @"Not Supported";
+    } else {
+      availability = [[NSArray arrayWithObjects:@"Busy", @"Free", @"Tentative", @"Unavailable", nil] objectAtIndex:event.availability];
+    }
+    [entry setObject:availability forKey:@"availability"];
 
     if (event.location != nil) {
       [entry setObject:event.location forKey:@"location"];
