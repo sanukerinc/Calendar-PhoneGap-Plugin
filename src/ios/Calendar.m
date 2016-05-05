@@ -442,6 +442,7 @@
     [entry setObject:[NSNumber numberWithBool: event.allDay] forKey:@"allDay"];
 
     NSString *availability;
+    NSLog(@"value of availability = %@",event.availability);
     if (event.availability == -1) {
       availability = @"Not Supported";
     } else {
